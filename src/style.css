@@ -1,0 +1,16 @@
+* {
+    font-family: 'Cairo', sans-serif !important;
+}
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #0d0614; 
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+button, input, select, textarea {
+    font-family: 'Cairo', sans-serif !important;
+}
