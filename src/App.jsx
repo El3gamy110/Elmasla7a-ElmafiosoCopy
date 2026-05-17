@@ -267,20 +267,24 @@ export default function App() {
 
             <h4 className="text-gray-400 font-bold text-xs mt-4 mb-1">اصدر حكمك واتهم المشتبه به:</h4>
             <div className="space-y-2 max-h-[35vh] overflow-y-auto pr-1">
-              {players.filter(p => p.alive).map(p => (
+              {players.filter(p => p.alive).map(p => {
+                const jobDetails = scenario.jobs?.find(job => job.j === p.job);
+                const motive = jobDetails ? jobDetails.s : '';
+                return (
                 <div key={p.id} className="bg-[#161616] flex justify-between items-center p-[14px] rounded-[18px] border border-[#222]">
-                  <div>
+                  <div className="flex-1 pl-3 text-right">
                     <b className="text-white text-base block">{p.name}</b>
-                    <div className="text-[#00f2ff] text-xs font-bold">التخصص الجنائي: {p.job}</div>
+                    <div className="text-[#00f2ff] text-xs font-bold mb-1.5 mt-0.5">التخصص الجنائي: {p.job}</div>
+                    {motive && <div className="text-[#ff007f] text-[11px] leading-relaxed opacity-90 font-medium">الدافع: {motive}</div>}
                   </div>
                   <button 
                     onClick={() => vote(p.id)}
-                    className="bg-[#00f2ff] text-black px-4 py-2 text-xs font-black rounded-xl active:scale-95 transition-transform"
+                    className="bg-[#00f2ff] text-black px-4 py-2 text-xs font-black rounded-xl active:scale-95 transition-transform whitespace-nowrap shrink-0 ml-1"
                   >
                     اتهام ⚖️
                   </button>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         )}
@@ -292,21 +296,62 @@ export default function App() {
               {scenario.winner === 'بريء' ? 'العدالة انتصرت! ✅' : 'المافيا كسبوا المصلحة! ❌'}
             </h1>
             
-            <div className="bg-[#111] p-6 rounded-[25px] border-2 border-[#f3ff00] text-right max-h-[52vh] overflow-y-auto space-y-6 shadow-[0_0_20px_rgba(243,255,0,0.2)]">
-              <span className="text-[#00f2ff] font-black text-lg block border-b-2 border-[#222] pb-2 mb-4">🕵️ السرد الجنائي للقصة:</span>
+            <div className="recap-container-single bg-[#111] p-8 rounded-[30px] border-2 border-[#00f2ff] text-right max-h-[55vh] overflow-y-auto shadow-[0_0_30px_rgba(0,242,255,0.25)] relative">
+              <span className="text-[#00f2ff] font-black text-xl block border-b-2 border-[#222] pb-3 mb-5 tracking-wide">🕵️ التقرير الجنائي النهائي:</span>
               
               {mafias.map((mafiaPlayer, index) => {
-                const jobData = scenario.jobs?.find(job => job.j === mafiaPlayer.job);
-                const recapText = jobData ? jobData.recap : '';
+                const mafiaJob = scenario.jobs?.find(job => job.j === mafiaPlayer.job);
+                const rawD = mafiaJob ? mafiaJob.d : '';
+                
+                // دالة تعديل الضمائر لتناسق السرد (من المخاطب للغائب)
+                const formatLinguistic = (text) => {
+                  if (!text) return "";
+                  return text
+                    .replace(/يخصك/g, 'يخصه')
+                    .replace(/أنت/g, 'هو')
+                    .replace(/خطتك/g, 'خطته')
+                    .replace(/قمت/g, 'قام')
+                    .replace(/استغلت/g, 'استغل')
+                    .replace(/استغللت/g, 'استغل')
+                    .replace(/خبرتك/g, 'خبرته')
+                    .replace(/تسللت/g, 'تسلل')
+                    .replace(/عطلت/g, 'عطل')
+                    .replace(/وضعت/g, 'وضع')
+                    .replace(/دسست/g, 'دس')
+                    .replace(/استخدمت/g, 'استخدم')
+                    .replace(/تلاعبت/g, 'تلاعب')
+                    .replace(/دخلت/g, 'دخل')
+                    .replace(/أسقطت/g, 'أسقط')
+                    .replace(/ضربته/g, 'ضربه')
+                    .replace(/خنقته/g, 'خنقه')
+                    .replace(/استوليت/g, 'استولى')
+                    .replace(/جعلت/g, 'جعل')
+                    .replace(/كنت/g, 'كان')
+                    .replace(/عملك/g, 'عمله')
+                    .replace(/تواجدك/g, 'تواجده')
+                    .replace(/بصفتك/g, 'بصفته')
+                    .replace(/تعتقد/g, 'يعتقد')
+                    .replace(/أنك/g, 'أنه')
+                    .replace(/ورطتك/g, 'ورطته')
+                    .replace(/صلاحياتك/g, 'صلاحياته')
+                    .replace(/جريمتك/g, 'جريمته')
+                    .replace(/مهاراتك/g, 'مهاراته')
+                    .replace(/موقعك/g, 'موقعه')
+                    .replace(/خلفك/g, 'خلفه');
+                };
+
+                const cleanD = formatLinguistic(rawD);
+                const cleanS = formatLinguistic(mafiaJob?.s);
+                
+                const combinedStory = `في ${scenario.place}، ارتكب القاتل الذي كان يلعب دور (${mafiaJob?.j}) جريمته ضد الضحية ${scenario.victim}؛ حيث ${cleanD}، وجاء الدافع الأساسي وراء ارتكاب هذه الجريمة بناءً على أن ${cleanS}.. واللاعب المافيا الحقيقي الذي خطط ونفذ هذه المصلحة وخداع الجميع هو: `;
+
                 return (
-                  <div key={index} className="mb-6 last:mb-0">
-                    <p className="text-gray-100 text-base leading-[2.2] font-medium">
-                      {recapText}
-                      <span className="text-[#ff007f] font-black text-2xl mr-2 drop-shadow-[0_0_8px_rgba(255,0,127,0.8)] highlight-mafia inline-block">
-                        {mafiaPlayer.name}
-                      </span>
-                    </p>
-                  </div>
+                  <p key={index} className="recap-text-combined text-gray-200 text-[1.1rem] leading-[2.4] font-medium mb-8 last:mb-0">
+                    {combinedStory}
+                    <span className="text-[#f3ff00] font-black text-3xl mr-2 drop-shadow-[0_0_15px_rgba(243,255,0,0.8)] highlight-mafia inline-block">
+                      {mafiaPlayer.name}
+                    </span>
+                  </p>
                 );
               })}
             </div>
