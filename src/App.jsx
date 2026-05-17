@@ -39,6 +39,7 @@ export default function App() {
     const shuffledEv = [...baseScenario.evidences].sort(() => Math.random() - 0.5);
 
     setScenario({
+      ...baseScenario,
       text: `${baseScenario.place}، تم العثور على ${baseScenario.victim} مقتولاً. الدافع المتوقع هو ${baseScenario.motive}.`,
       ev: shuffledEv,
       victim: baseScenario.victim,
@@ -291,34 +292,37 @@ export default function App() {
               {scenario.winner === 'بريء' ? 'العدالة انتصرت! ✅' : 'المافيا كسبوا المصلحة! ❌'}
             </h1>
             
-            <div className="bg-[#111] p-5 rounded-[25px] border-2 border-[#f3ff00] text-right text-sm leading-[1.8] max-h-[52vh] overflow-y-auto space-y-4 shadow-xl">
-              <span className="text-[#00f2ff] font-black text-base block border-b border-[#222] pb-1">🕵️ الحكاية من الطقاطق للسلامو عليكم:</span>
-              <p className="text-gray-200 text-xs">
-                القصة بدأت لما اجتمع <span className="text-[#ff007f] font-black">{mafias.map(m => m.name).join(' و ')}</span> في الخفاء للتخلص التام من <b className="text-[#f3ff00]">{scenario.victim}</b>. 
-                الشرارة الأساسية انطلقت من عند <b>{mafias[0]?.name}</b> بسبب دوافعه السرية: {mafias[0]?.story}.
-              </p>
-
-              <span className="text-[#00f2ff] font-black text-base block border-b border-[#222] pb-1">🪓 تفاصيل وخطة التنفيذ:</span>
-              <p className="text-gray-200 text-xs">
-                الخطة كانت محبوكة، فباعتباره شغال كـ <span className="text-[#ff007f] font-black">{mafias[0]?.job}</span>، استغل مهاراته الحرفية في إنه: {mafias[0]?.e}. 
-                وده اللي فتح الخيط للمحققين عشان يلاقوا الدليل رقم 1 وهو: <i>"{scenario.ev[0]}"</i>.
-              </p>
-
-              {mafias[1] && (
-                <>
-                  <span className="text-[#00f2ff] font-black text-base block border-b border-[#222] pb-1">🤝 دور الشريك التاني:</span>
-                  <p className="text-gray-200 text-xs">
-                    أما الشريك التاني <b>{mafias[1].name}</b> فدوره كـ <span className="text-[#ff007f] font-black">{mafias[1].job}</span> كان حاسم ومكمل للجريمة لأن قصته {mafias[1].story}، وقام بـ {mafias[1].e}.
-                  </p>
-                </>
-              )}
-
-              <span className="text-[#00f2ff] font-black text-base block border-b border-[#222] pb-1">💀 الدافع الحقيقي الكلي:</span>
-              <p className="text-gray-200 text-xs">الهدف النهائي والدافع الكبير من وراء المصلحة دي كان {scenario.motive}.. المصلحة خلصت والشرطة قفلت المحضر.</p>
+            <div className="bg-[#111] p-6 rounded-[25px] border-2 border-[#f3ff00] text-right max-h-[52vh] overflow-y-auto space-y-6 shadow-[0_0_20px_rgba(243,255,0,0.2)]">
+              <span className="text-[#00f2ff] font-black text-lg block border-b-2 border-[#222] pb-2 mb-4">🕵️ السرد الجنائي للقصة:</span>
+              
+              {mafias.map((mafiaPlayer, index) => {
+                const jobData = scenario.jobs?.find(job => job.j === mafiaPlayer.job);
+                const recapText = jobData ? jobData.recap : '';
+                return (
+                  <div key={index} className="mb-6 last:mb-0">
+                    <p className="text-gray-100 text-base leading-[2.2] font-medium">
+                      {recapText}
+                      <span className="text-[#ff007f] font-black text-2xl mr-2 drop-shadow-[0_0_8px_rgba(255,0,127,0.8)] highlight-mafia inline-block">
+                        {mafiaPlayer.name}
+                      </span>
+                    </p>
+                  </div>
+                );
+              })}
             </div>
 
             <button 
-              onClick={() => setScreen('setup')}
+              onClick={() => {
+                setScreen('setup');
+                setPlayerCount('');
+                setNames([]);
+                setPlayers([]);
+                setScenario({});
+                setShownEvidences([]);
+                setIsShowdown(false);
+                setCurrentIdx(0);
+                setShowCard(false);
+              }}
               className="w-full p-[18px] rounded-[15px] text-xl font-black bg-[#f3ff00] text-black shadow-[0_4px_15px_rgba(243,255,0,0.3)] active:scale-95 transition-transform"
             >
               مصلحة تانية؟ 🔄
